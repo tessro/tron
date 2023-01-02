@@ -34,9 +34,9 @@ type Client struct {
 }
 
 type RequestHeader struct {
-	ClientTag   string
-	RequestType string
-	Url         string
+	ClientTag   string `json:",omitempty"`
+	RequestType string `json:",omitempty"`
+	URL         string `json:"Url,omitempty"`
 }
 
 func (c Client) loadClientCertificate() (tls.Certificate, error) {
@@ -265,7 +265,7 @@ func (c *Client) Pair() error {
 	req := PairRequest{
 		Header: RequestHeader{
 			RequestType: "Execute",
-			Url:         "/pair",
+			URL:         "/pair",
 			ClientTag:   "pair",
 		},
 		Body: PairRequestBody{
@@ -339,7 +339,7 @@ func (c *Client) Ping() error {
 		CommuniqueType: "ReadRequest",
 		Header: RequestHeader{
 			ClientTag: "ping-1",
-			Url:       "/server/1/status/ping",
+			URL:       "/server/1/status/ping",
 		},
 	}
 
@@ -379,7 +379,7 @@ func (c *Client) Devices() (string, error) {
 	req := PingRequest{
 		CommuniqueType: "ReadRequest",
 		Header: RequestHeader{
-			Url: "/device",
+			URL: "/device",
 		},
 	}
 
