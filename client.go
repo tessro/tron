@@ -45,6 +45,19 @@ type RequestHeader struct {
 	URL         string `json:"Url,omitempty"`
 }
 
+type Response struct {
+	CommuniqueType string
+	Header         ResponseHeader
+	Body           interface{}
+}
+
+type ResponseHeader struct {
+	ClientTag       string
+	MessageBodyType string
+	StatusCode      string
+	URL             string `json:"Url"`
+}
+
 func (c Client) loadClientCertificate() (tls.Certificate, error) {
 	clientCert, err := os.ReadFile(c.ClientCertPath)
 	if err != nil {
