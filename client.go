@@ -55,7 +55,7 @@ func (c Client) loadClientCertificate() (tls.Certificate, error) {
 	return cert, nil
 }
 
-func (c Client) loadPairingCertificate() (tls.Certificate, error) {
+func (c *Client) loadPairingCertificate() (tls.Certificate, error) {
 	const clientCert = `-----BEGIN CERTIFICATE-----
 MIIECjCCAvKgAwIBAgIBAzANBgkqhkiG9w0BAQ0FADCBlzELMAkGA1UEBhMCVVMx
 FTATBgNVBAgTDFBlbm5zeWx2YW5pYTElMCMGA1UEChMcTHV0cm9uIEVsZWN0cm9u
@@ -120,7 +120,7 @@ uHnNjMTXCVxNy4tkARwLRwI+1aV5PMzFSi+HyuWmBaWOe19uz3SFbYs=
 // Pair pairs with a Lutron Caséta LEAP controller. This requires the user to
 // press the pairing button on the controller. After pairing, the client
 // certificate is written to the config file.
-func (c Client) Pair() error {
+func (c *Client) Pair() error {
 	cert, err := c.loadPairingCertificate()
 	if err != nil {
 		return err
@@ -262,7 +262,7 @@ func (c Client) Pair() error {
 }
 
 // Ping sends a `ping` request to the controller.
-func (c Client) Ping() error {
+func (c *Client) Ping() error {
 	cert, err := c.loadClientCertificate()
 	if err != nil {
 		return err
@@ -319,7 +319,7 @@ func (c Client) Ping() error {
 }
 
 // Devices gets the list of devices this controller knows about.
-func (c Client) Devices() (string, error) {
+func (c *Client) Devices() (string, error) {
 	cert, err := c.loadClientCertificate()
 	if err != nil {
 		return "", err
