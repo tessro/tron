@@ -357,21 +357,29 @@ func (c *Client) Ping() error {
 		},
 	}
 
-	json, err := json.Marshal(req)
+	msg, err := json.Marshal(req)
 	if err != nil {
 		return err
 	}
 
-	err = c.send(json)
+	err = c.send(msg)
 	if err != nil {
 		return err
 	}
 
 	for {
-		_, err := c.readLine()
+		line, err := c.readLine()
 		if err != nil {
 			return err
 		}
+
+		var res Response
+		err = json.Unmarshal([]byte(line), &res)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("res: %+v\n", res)
 		// TODO: parse client tag and close when it matches
 	}
 	return nil
@@ -392,7 +400,7 @@ func (c *Client) Devices() (string, error) {
 		},
 	}
 
-	json, err := json.Marshal(req)
+	msg, err := json.Marshal(req)
 	if c.Verbose {
 		fmt.Println("ReadRequest", "/device")
 	}
@@ -400,16 +408,24 @@ func (c *Client) Devices() (string, error) {
 		return "", err
 	}
 
-	err = c.send(json)
+	err = c.send(msg)
 	if err != nil {
 		return "", err
 	}
 
 	for {
-		_, err := c.readLine()
+		line, err := c.readLine()
 		if err != nil {
 			return "", err
 		}
+
+		var res Response
+		err = json.Unmarshal([]byte(line), &res)
+		if err != nil {
+			return "", err
+		}
+
+		fmt.Printf("res: %+v\n", res)
 	}
 	return "result", nil
 }
