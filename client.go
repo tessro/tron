@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"net/http"
 	"os"
 	"time"
 )
@@ -28,8 +27,8 @@ type Client struct {
 
 	Verbose bool
 
-	client http.Client
-	seqNo  int // instead of UUIDs
+	conn  *tls.Conn
+	seqNo int // instead of UUIDs
 }
 
 type RequestHeader struct {
@@ -53,6 +52,44 @@ func (c Client) loadClientCertificate() (tls.Certificate, error) {
 	}
 
 	return cert, nil
+}
+
+func (c *Client) dial() error {
+	cert, err := c.loadClientCertificate()
+	if err != nil {
+		return err
+	}
+
+	c.conn, err = tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, controlPort), &tls.Config{
+		InsecureSkipVerify: true,
+		Certificates:       []tls.Certificate{cert},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) dialPairing() error {
+	cert, err := c.loadPairingCertificate()
+	if err != nil {
+		return err
+	}
+
+	c.conn, err = tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, pairingPort), &tls.Config{
+		InsecureSkipVerify: true,
+		Certificates:       []tls.Certificate{cert},
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) Close() error {
+	return c.conn.Close()
 }
 
 func (c *Client) loadPairingCertificate() (tls.Certificate, error) {
@@ -121,21 +158,17 @@ uHnNjMTXCVxNy4tkARwLRwI+1aV5PMzFSi+HyuWmBaWOe19uz3SFbYs=
 // press the pairing button on the controller. After pairing, the client
 // certificate is written to the config file.
 func (c *Client) Pair() error {
-	cert, err := c.loadPairingCertificate()
+	err := c.dialPairing()
 	if err != nil {
 		return err
 	}
+	// May as well clean up, since the connection can't be reused due to
+	// the deadline
+	defer c.Close()
 
-	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, pairingPort), &tls.Config{
-		InsecureSkipVerify: true,
-		Certificates:       []tls.Certificate{cert},
-	})
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	err = conn.SetDeadline(time.Now().Add(2 * time.Minute))
+	// NOTE(ptr): Setting a deadline prevents the connection from being
+	// reused
+	err = c.conn.SetDeadline(time.Now().Add(2 * time.Minute))
 	if err != nil {
 		return err
 	}
@@ -187,7 +220,7 @@ func (c *Client) Pair() error {
 		Bytes: csrCert,
 	})
 
-	r := bufio.NewReader(conn)
+	r := bufio.NewReader(c.conn)
 	line, err := r.ReadString('\n')
 	if err != nil {
 		return err
@@ -217,12 +250,12 @@ func (c *Client) Pair() error {
 		return err
 	}
 
-	_, err = conn.Write(msg)
+	_, err = c.conn.Write(msg)
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.Write([]byte("\n"))
+	_, err = c.conn.Write([]byte("\n"))
 	if err != nil {
 		return err
 	}
@@ -263,19 +296,11 @@ func (c *Client) Pair() error {
 
 // Ping sends a `ping` request to the controller.
 func (c *Client) Ping() error {
-	cert, err := c.loadClientCertificate()
+	err := c.dial()
 	if err != nil {
 		return err
 	}
-
-	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, controlPort), &tls.Config{
-		InsecureSkipVerify: true,
-		Certificates:       []tls.Certificate{cert},
-	})
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
+	defer c.Close()
 
 	type PingRequest struct {
 		CommuniqueType string
@@ -296,10 +321,10 @@ func (c *Client) Ping() error {
 		return err
 	}
 
-	conn.Write(json)
-	conn.Write([]byte("\n"))
+	c.conn.Write(json)
+	c.conn.Write([]byte("\n"))
 
-	r := bufio.NewReader(conn)
+	r := bufio.NewReader(c.conn)
 	for {
 		line, err := r.ReadString('\n')
 		if err != nil {
@@ -320,19 +345,11 @@ func (c *Client) Ping() error {
 
 // Devices gets the list of devices this controller knows about.
 func (c *Client) Devices() (string, error) {
-	cert, err := c.loadClientCertificate()
+	err := c.dial()
 	if err != nil {
 		return "", err
 	}
-
-	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, controlPort), &tls.Config{
-		InsecureSkipVerify: true,
-		Certificates:       []tls.Certificate{cert},
-	})
-	if err != nil {
-		return "", err
-	}
-	defer conn.Close()
+	defer c.Close()
 
 	type PingRequest struct {
 		CommuniqueType string
