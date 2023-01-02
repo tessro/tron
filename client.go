@@ -36,6 +36,7 @@ type Client struct {
 type Request struct {
 	CommuniqueType string
 	Header         RequestHeader
+	Body           interface{} `json:",omitempty"`
 }
 
 type RequestHeader struct {
