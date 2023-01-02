@@ -262,10 +262,10 @@ func (c Client) Pair() error {
 }
 
 // Ping sends a `ping` request to the controller.
-func (c Client) Ping() (string, error) {
+func (c Client) Ping() error {
 	cert, err := c.loadClientCertificate()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, controlPort), &tls.Config{
@@ -273,7 +273,7 @@ func (c Client) Ping() (string, error) {
 		Certificates:       []tls.Certificate{cert},
 	})
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer conn.Close()
 
@@ -293,7 +293,7 @@ func (c Client) Ping() (string, error) {
 	json, err := json.Marshal(req)
 	fmt.Printf("request = %s\n", json)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	conn.Write(json)
@@ -303,7 +303,7 @@ func (c Client) Ping() (string, error) {
 	for {
 		line, err := r.ReadString('\n')
 		if err != nil {
-			return "", err
+			return err
 		}
 		if c.Verbose {
 			fmt.Println("<===", line)
@@ -315,7 +315,7 @@ func (c Client) Ping() (string, error) {
 		}
 		// TODO: parse client tag and close when it matches
 	}
-	return "result", nil
+	return nil
 }
 
 // Devices gets the list of devices this controller knows about.

@@ -71,7 +71,7 @@ func main() {
 		case "device":
 			doDeviceCommand(client, flag.Args()[1:])
 		case "ping":
-			_, err := client.Ping()
+			err := client.Ping()
 			if err != nil {
 				fmt.Println("error: failed to ping controller:", err)
 				os.Exit(1)
