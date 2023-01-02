@@ -91,6 +91,23 @@ type RequestHeader struct {
 	Url         string
 }
 
+func (c Client) loadClientCertificate() (tls.Certificate, error) {
+	clientCert, err := os.ReadFile(c.ClientCertPath)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+	clientKey, err := os.ReadFile(c.ClientKeyPath)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+	cert, err := tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	return cert, nil
+}
+
 // Pair pairs with a Lutron Caséta LEAP controller. This requires the user to
 // press the pairing button on the controller. After pairing, the client
 // certificate is written to the config file.
@@ -238,15 +255,7 @@ func (c Client) Pair() (string, error) {
 
 // Ping sends a `ping` request to the controller.
 func (c Client) Ping() (string, error) {
-	clientCert, err := os.ReadFile(c.ClientCertPath)
-	if err != nil {
-		return "", err
-	}
-	clientKey, err := os.ReadFile(c.ClientKeyPath)
-	if err != nil {
-		return "", err
-	}
-	cert, err := tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
+	cert, err := c.loadClientCertificate()
 	if err != nil {
 		return "", err
 	}
@@ -303,15 +312,7 @@ func (c Client) Ping() (string, error) {
 
 // Devices gets the list of devices this controller knows about.
 func (c Client) Devices() (string, error) {
-	clientCert, err := os.ReadFile(c.ClientCertPath)
-	if err != nil {
-		return "", err
-	}
-	clientKey, err := os.ReadFile(c.ClientKeyPath)
-	if err != nil {
-		return "", err
-	}
-	cert, err := tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
+	cert, err := c.loadClientCertificate()
 	if err != nil {
 		return "", err
 	}
