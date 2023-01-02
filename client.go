@@ -92,6 +92,24 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
+func (c *Client) send(message []byte) error {
+	if c.Verbose {
+		fmt.Println("===>", string(message))
+	}
+
+	_, err := c.conn.Write(message)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.conn.Write([]byte("\n"))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) loadPairingCertificate() (tls.Certificate, error) {
 	const clientCert = `-----BEGIN CERTIFICATE-----
 MIIECjCCAvKgAwIBAgIBAzANBgkqhkiG9w0BAQ0FADCBlzELMAkGA1UEBhMCVVMx
@@ -245,17 +263,11 @@ func (c *Client) Pair() error {
 	}
 
 	msg, err := json.Marshal(req)
-	fmt.Printf("request = %s\n", msg)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.conn.Write(msg)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.conn.Write([]byte("\n"))
+	err = c.send(msg)
 	if err != nil {
 		return err
 	}
@@ -316,13 +328,14 @@ func (c *Client) Ping() error {
 	}
 
 	json, err := json.Marshal(req)
-	fmt.Printf("request = %s\n", json)
 	if err != nil {
 		return err
 	}
 
-	c.conn.Write(json)
-	c.conn.Write([]byte("\n"))
+	err = c.send(json)
+	if err != nil {
+		return err
+	}
 
 	r := bufio.NewReader(c.conn)
 	for {
@@ -366,14 +379,15 @@ func (c *Client) Devices() (string, error) {
 	json, err := json.Marshal(req)
 	if c.Verbose {
 		fmt.Println("ReadRequest", "/device")
-		fmt.Println("===>", string(json))
 	}
 	if err != nil {
 		return "", err
 	}
 
-	conn.Write(json)
-	conn.Write([]byte("\n"))
+	err = c.send(json)
+	if err != nil {
+		return "", err
+	}
 
 	r := bufio.NewReader(conn)
 	for {
