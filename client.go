@@ -341,7 +341,8 @@ func (c *Client) Pair() error {
 	return nil
 }
 
-// Ping sends a `ping` request to the controller.
+// Ping sends a `ping` request to the controller. If no error is returned, the
+// controller responded with a 200 OK status.
 func (c *Client) Ping() error {
 	err := c.dial()
 	if err != nil {
@@ -349,10 +350,12 @@ func (c *Client) Ping() error {
 	}
 	defer c.Close()
 
+	tag := "ping-1"
+
 	req := Request{
 		CommuniqueType: "ReadRequest",
 		Header: RequestHeader{
-			ClientTag: "ping-1",
+			ClientTag: tag,
 			URL:       "/server/1/status/ping",
 		},
 	}
@@ -379,10 +382,14 @@ func (c *Client) Ping() error {
 			return err
 		}
 
-		fmt.Printf("res: %+v\n", res)
-		// TODO: parse client tag and close when it matches
+		if res.CommuniqueType == "ReadResponse" && res.Header.ClientTag == tag {
+			if res.Header.StatusCode == "200 OK" {
+				return nil
+			} else {
+				return fmt.Errorf("received %s status", res.Header.StatusCode)
+			}
+		}
 	}
-	return nil
 }
 
 // Devices gets the list of devices this controller knows about.
@@ -393,10 +400,13 @@ func (c *Client) Devices() (string, error) {
 	}
 	defer c.Close()
 
+	tag := "devices-1"
+
 	req := Request{
 		CommuniqueType: "ReadRequest",
 		Header: RequestHeader{
-			URL: "/device",
+			ClientTag: tag,
+			URL:       "/device",
 		},
 	}
 
@@ -425,7 +435,13 @@ func (c *Client) Devices() (string, error) {
 			return "", err
 		}
 
-		fmt.Printf("res: %+v\n", res)
+		if res.CommuniqueType == "ReadResponse" && res.Header.ClientTag == tag {
+			if res.Header.StatusCode == "200 OK" {
+				fmt.Printf("res: %+v\n", res)
+				return "success", nil
+			} else {
+				return "", fmt.Errorf("received %s status", res.Header.StatusCode)
+			}
+		}
 	}
-	return "result", nil
 }

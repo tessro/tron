@@ -76,6 +76,7 @@ func main() {
 				fmt.Println("error: failed to ping controller:", err)
 				os.Exit(1)
 			}
+			fmt.Println("OK")
 		default:
 			usage()
 		}
