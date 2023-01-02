@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -28,6 +29,7 @@ type Client struct {
 	Verbose bool
 
 	conn  *tls.Conn
+	r     *bufio.Reader
 	seqNo int // instead of UUIDs
 }
 
@@ -68,6 +70,8 @@ func (c *Client) dial() error {
 		return err
 	}
 
+	c.r = bufio.NewReader(c.conn)
+
 	return nil
 }
 
@@ -84,6 +88,8 @@ func (c *Client) dialPairing() error {
 	if err != nil {
 		return err
 	}
+
+	c.r = bufio.NewReader(c.conn)
 
 	return nil
 }
@@ -108,6 +114,19 @@ func (c *Client) send(message []byte) error {
 	}
 
 	return nil
+}
+
+func (c *Client) readLine() (string, error) {
+	line, err := c.r.ReadString('\n')
+	if err != nil {
+		return line, err
+	}
+
+	if c.Verbose {
+		fmt.Println("<===", strings.TrimRight(line, "\n"))
+	}
+
+	return line, nil
 }
 
 func (c *Client) loadPairingCertificate() (tls.Certificate, error) {
@@ -238,12 +257,10 @@ func (c *Client) Pair() error {
 		Bytes: csrCert,
 	})
 
-	r := bufio.NewReader(c.conn)
-	line, err := r.ReadString('\n')
+	line, err := c.readLine()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("response = %s\n", line)
 
 	req := PairRequest{
 		Header: RequestHeader{
@@ -272,11 +289,10 @@ func (c *Client) Pair() error {
 		return err
 	}
 
-	line, err = r.ReadString('\n')
+	line, err = c.readLine()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("response = %s\n", line)
 
 	type PairResponse struct {
 		Body struct {
@@ -337,19 +353,10 @@ func (c *Client) Ping() error {
 		return err
 	}
 
-	r := bufio.NewReader(c.conn)
 	for {
-		line, err := r.ReadString('\n')
+		_, err := c.readLine()
 		if err != nil {
 			return err
-		}
-		if c.Verbose {
-			fmt.Println("<===", line)
-			//fmt.Println("<===", res.Status)
-			//if len(responseBody) > 0 {
-			//	fmt.Println("<===", string(responseBody))
-			//}
-			//fmt.Println()
 		}
 		// TODO: parse client tag and close when it matches
 	}
@@ -389,20 +396,10 @@ func (c *Client) Devices() (string, error) {
 		return "", err
 	}
 
-	r := bufio.NewReader(conn)
 	for {
-		line, err := r.ReadString('\n')
+		_, err := c.readLine()
 		if err != nil {
 			return "", err
-		}
-
-		if c.Verbose {
-			fmt.Println("<===", line)
-			//fmt.Println("<===", res.Status)
-			//if len(responseBody) > 0 {
-			//	fmt.Println("<===", string(responseBody))
-			//}
-			//fmt.Println()
 		}
 	}
 	return "result", nil
