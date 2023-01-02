@@ -13,6 +13,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const controlPort = 8081
@@ -118,8 +120,7 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) generateClientTag() string {
-	c.seqNo++
-	return fmt.Sprintf("req-%d", c.seqNo)
+	return uuid.NewString()
 }
 
 func (c *Client) send(message []byte) error {
