@@ -33,6 +33,11 @@ type Client struct {
 	seqNo int // instead of UUIDs
 }
 
+type Request struct {
+	CommuniqueType string
+	Header         RequestHeader
+}
+
 type RequestHeader struct {
 	ClientTag   string `json:",omitempty"`
 	RequestType string `json:",omitempty"`
@@ -330,12 +335,7 @@ func (c *Client) Ping() error {
 	}
 	defer c.Close()
 
-	type PingRequest struct {
-		CommuniqueType string
-		Header         RequestHeader
-	}
-
-	req := PingRequest{
+	req := Request{
 		CommuniqueType: "ReadRequest",
 		Header: RequestHeader{
 			ClientTag: "ping-1",
@@ -371,12 +371,7 @@ func (c *Client) Devices() (string, error) {
 	}
 	defer c.Close()
 
-	type PingRequest struct {
-		CommuniqueType string
-		Header         RequestHeader
-	}
-
-	req := PingRequest{
+	req := Request{
 		CommuniqueType: "ReadRequest",
 		Header: RequestHeader{
 			URL: "/device",
