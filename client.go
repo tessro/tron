@@ -117,6 +117,11 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
+func (c *Client) generateClientTag() string {
+	c.seqNo++
+	return fmt.Sprintf("req-%d", c.seqNo)
+}
+
 func (c *Client) send(message []byte) error {
 	if c.Verbose {
 		fmt.Println("===>", string(message))
@@ -350,7 +355,7 @@ func (c *Client) Ping() error {
 	}
 	defer c.Close()
 
-	tag := "ping-1"
+	tag := c.generateClientTag()
 
 	req := Request{
 		CommuniqueType: "ReadRequest",
@@ -400,7 +405,7 @@ func (c *Client) Devices() (string, error) {
 	}
 	defer c.Close()
 
-	tag := "devices-1"
+	tag := c.generateClientTag()
 
 	req := Request{
 		CommuniqueType: "ReadRequest",
