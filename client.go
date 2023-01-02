@@ -120,10 +120,10 @@ uHnNjMTXCVxNy4tkARwLRwI+1aV5PMzFSi+HyuWmBaWOe19uz3SFbYs=
 // Pair pairs with a Lutron Caséta LEAP controller. This requires the user to
 // press the pairing button on the controller. After pairing, the client
 // certificate is written to the config file.
-func (c Client) Pair() (string, error) {
+func (c Client) Pair() error {
 	cert, err := c.loadPairingCertificate()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:%d", c.Host, pairingPort), &tls.Config{
@@ -131,13 +131,13 @@ func (c Client) Pair() (string, error) {
 		Certificates:       []tls.Certificate{cert},
 	})
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer conn.Close()
 
 	err = conn.SetDeadline(time.Now().Add(2 * time.Minute))
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	type PairRequestParameters struct {
@@ -159,17 +159,17 @@ func (c Client) Pair() (string, error) {
 
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	// TODO: configure file path
 	w, err := os.OpenFile(c.ClientKeyPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
 	if err != nil {
-		return "", err
+		return err
 	}
 	err = pem.Encode(w, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	csrCert, err := x509.CreateCertificateRequest(rand.Reader, &x509.CertificateRequest{
@@ -179,7 +179,7 @@ func (c Client) Pair() (string, error) {
 		},
 	}, priv)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	csr := pem.EncodeToMemory(&pem.Block{
@@ -190,7 +190,7 @@ func (c Client) Pair() (string, error) {
 	r := bufio.NewReader(conn)
 	line, err := r.ReadString('\n')
 	if err != nil {
-		return "", err
+		return err
 	}
 	fmt.Printf("response = %s\n", line)
 
@@ -214,22 +214,22 @@ func (c Client) Pair() (string, error) {
 	msg, err := json.Marshal(req)
 	fmt.Printf("request = %s\n", msg)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	_, err = conn.Write(msg)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	_, err = conn.Write([]byte("\n"))
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	line, err = r.ReadString('\n')
 	if err != nil {
-		return "", err
+		return err
 	}
 	fmt.Printf("response = %s\n", line)
 
@@ -245,21 +245,20 @@ func (c Client) Pair() (string, error) {
 	var res PairResponse
 	err = json.Unmarshal([]byte(line), &res)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	err = os.WriteFile(c.ClientCertPath, []byte(res.Body.SigningResult.Certificate), 0644)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	err = os.WriteFile(c.CACertPath, []byte(res.Body.SigningResult.RootCertificate), 0644)
 	if err != nil {
-		return "", err
+		return err
 	}
-	// TODO: result is in Body.SigningResult.Certificate and
-	// Body.SigningResult.RootCertificate
-	return "success", nil
+
+	return nil
 }
 
 // Ping sends a `ping` request to the controller.

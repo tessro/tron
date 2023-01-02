@@ -63,7 +63,7 @@ func main() {
 		cmd := flag.Arg(0)
 		switch cmd {
 		case "pair":
-			_, err := client.Pair()
+			err := client.Pair()
 			if err != nil {
 				fmt.Println("error: failed to pair controller:", err)
 				os.Exit(1)
