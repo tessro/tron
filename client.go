@@ -85,6 +85,12 @@ type Client struct {
 	seqNo  int // instead of UUIDs
 }
 
+type RequestHeader struct {
+	ClientTag   string
+	RequestType string
+	Url         string
+}
+
 // Pair pairs with a Lutron Caséta LEAP controller. This requires the user to
 // press the pairing button on the controller. After pairing, the client
 // certificate is written to the config file.
@@ -108,12 +114,6 @@ func (c Client) Pair() (string, error) {
 		return "", err
 	}
 
-	type PairRequestHeaders struct {
-		ClientTag   string
-		RequestType string
-		Url         string
-	}
-
 	type PairRequestParameters struct {
 		CSR         string
 		DeviceUID   string
@@ -128,7 +128,7 @@ func (c Client) Pair() (string, error) {
 
 	type PairRequest struct {
 		Body   PairRequestBody
-		Header PairRequestHeaders
+		Header RequestHeader
 	}
 
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -169,7 +169,7 @@ func (c Client) Pair() (string, error) {
 	fmt.Printf("response = %s\n", line)
 
 	req := PairRequest{
-		Header: PairRequestHeaders{
+		Header: RequestHeader{
 			RequestType: "Execute",
 			Url:         "/pair",
 			ClientTag:   "pair",
@@ -260,19 +260,14 @@ func (c Client) Ping() (string, error) {
 	}
 	defer conn.Close()
 
-	type PingRequestHeader struct {
-		ClientTag string
-		Url       string
-	}
-
 	type PingRequest struct {
 		CommuniqueType string
-		Header         PingRequestHeader
+		Header         RequestHeader
 	}
 
 	req := PingRequest{
 		CommuniqueType: "ReadRequest",
-		Header: PingRequestHeader{
+		Header: RequestHeader{
 			ClientTag: "ping-1",
 			Url:       "/server/1/status/ping",
 		},
@@ -330,18 +325,14 @@ func (c Client) Devices() (string, error) {
 	}
 	defer conn.Close()
 
-	type PingRequestHeader struct {
-		Url string
-	}
-
 	type PingRequest struct {
 		CommuniqueType string
-		Header         PingRequestHeader
+		Header         RequestHeader
 	}
 
 	req := PingRequest{
 		CommuniqueType: "ReadRequest",
-		Header: PingRequestHeader{
+		Header: RequestHeader{
 			Url: "/device",
 		},
 	}
