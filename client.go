@@ -75,6 +75,10 @@ uHnNjMTXCVxNy4tkARwLRwI+1aV5PMzFSi+HyuWmBaWOe19uz3SFbYs=
 type Client struct {
 	Host string
 
+	CACertPath     string
+	ClientCertPath string
+	ClientKeyPath  string
+
 	Verbose bool
 
 	client http.Client
@@ -133,7 +137,7 @@ func (c Client) Pair() (string, error) {
 	}
 
 	// TODO: configure file path
-	w, err := os.OpenFile("/Users/paul/.config/tron/certs/client.key", os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
+	w, err := os.OpenFile(c.ClientKeyPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0600)
 	if err != nil {
 		return "", err
 	}
@@ -218,12 +222,12 @@ func (c Client) Pair() (string, error) {
 		return "", err
 	}
 
-	err = os.WriteFile("/Users/paul/.config/tron/certs/client.crt", []byte(res.Body.SigningResult.Certificate), 0644)
+	err = os.WriteFile(c.ClientCertPath, []byte(res.Body.SigningResult.Certificate), 0644)
 	if err != nil {
 		return "", err
 	}
 
-	err = os.WriteFile("/Users/paul/.config/tron/certs/root.crt", []byte(res.Body.SigningResult.RootCertificate), 0644)
+	err = os.WriteFile(c.CACertPath, []byte(res.Body.SigningResult.RootCertificate), 0644)
 	if err != nil {
 		return "", err
 	}
@@ -234,11 +238,11 @@ func (c Client) Pair() (string, error) {
 
 // Ping sends a `ping` request to the controller.
 func (c Client) Ping() (string, error) {
-	clientCert, err := os.ReadFile("/Users/paul/.config/tron/certs/client.crt")
+	clientCert, err := os.ReadFile(c.ClientCertPath)
 	if err != nil {
 		return "", err
 	}
-	clientKey, err := os.ReadFile("/Users/paul/.config/tron/certs/client.key")
+	clientKey, err := os.ReadFile(c.ClientKeyPath)
 	if err != nil {
 		return "", err
 	}
@@ -304,11 +308,11 @@ func (c Client) Ping() (string, error) {
 
 // Devices gets the list of devices this controller knows about.
 func (c Client) Devices() (string, error) {
-	clientCert, err := os.ReadFile("/Users/paul/.config/tron/certs/client.crt")
+	clientCert, err := os.ReadFile(c.ClientCertPath)
 	if err != nil {
 		return "", err
 	}
-	clientKey, err := os.ReadFile("/Users/paul/.config/tron/certs/client.key")
+	clientKey, err := os.ReadFile(c.ClientKeyPath)
 	if err != nil {
 		return "", err
 	}

@@ -11,6 +11,7 @@ import (
 )
 
 const defaultConfigFile = ".tronrc"
+const defaultCertDir = ".config/tron/certs"
 
 var verbose = flag.Bool("v", false, "Verbose")
 
@@ -45,7 +46,12 @@ func main() {
 	}
 
 	client := Client{
-		Host:    cfg.Section("").Key("host").String(),
+		Host: cfg.Section("").Key("host").String(),
+
+		CACertPath:     filepath.Join(dir, defaultCertDir, "ca.crt"),
+		ClientCertPath: filepath.Join(dir, defaultCertDir, "client.crt"),
+		ClientKeyPath:  filepath.Join(dir, defaultCertDir, "client.key"),
+
 		Verbose: *verbose,
 	}
 
