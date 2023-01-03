@@ -34,6 +34,7 @@ tron device list           # List installed devices
 
 # Servers
 tron server list           # List available controllers
+tron server info [id]      # Print all controller information
 
 # Services
 tron service list          # List supported 3rd party services
