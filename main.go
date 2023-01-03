@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -131,5 +132,12 @@ func doGetCommand(client Client, args []string) {
 		fmt.Println("error: failed to get path:", err)
 		os.Exit(1)
 	}
-	fmt.Printf("result: %+v\n", res)
+
+	out, err := json.MarshalIndent(res, "", "  ")
+	if err != nil {
+		fmt.Println("error: failed to format response as JSON:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(string(out))
 }
