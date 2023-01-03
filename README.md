@@ -42,6 +42,8 @@ tron service list          # List supported 3rd party services
 # Zones
 tron zone list             # List defined zones
 tron zone info <id>        # Print all zone information
+tron zone on <id>          # Turn the zone on (dim to 100)
+tron zone off <id>         # Turn the zone off (dim to 0)
 tron zone dim <id> <level> # Dim the zone to the provided level
 
 # Raw querying

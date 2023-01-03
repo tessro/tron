@@ -230,6 +230,8 @@ func doZoneCommand(client Client, args []string) {
 	usage := func() {
 		fmt.Println("usage: tron zone list")
 		fmt.Println("usage: tron zone info <id>")
+		fmt.Println("usage: tron zone on <id>")
+		fmt.Println("usage: tron zone off <id>")
 		fmt.Println("usage: tron zone dim <id> <level>")
 		os.Exit(1)
 	}
@@ -276,6 +278,26 @@ func doZoneCommand(client Client, args []string) {
 		for _, zone := range list {
 			printZone(zone)
 			fmt.Println()
+		}
+	case "on":
+		if len(args) < 2 {
+			usage()
+		}
+		id := args[1]
+		_, err := client.ZoneDim(id, 100)
+		if err != nil {
+			fmt.Println("error: failed to dim zone:", err)
+			os.Exit(1)
+		}
+	case "off":
+		if len(args) < 2 {
+			usage()
+		}
+		id := args[1]
+		_, err := client.ZoneDim(id, 0)
+		if err != nil {
+			fmt.Println("error: failed to dim zone:", err)
+			os.Exit(1)
 		}
 	default:
 		usage()
