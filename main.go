@@ -58,7 +58,7 @@ func main() {
 	}
 
 	if *verbose {
-		fmt.Printf("Host: %s\n\n", client.Host)
+		os.Stderr.WriteString(fmt.Sprintf("Host: %s\n\n", client.Host))
 	}
 
 	if flag.NArg() > 0 {
