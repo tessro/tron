@@ -75,12 +75,12 @@ func main() {
 		case "get":
 			doGetCommand(client, flag.Args()[1:])
 		case "ping":
-			err := client.Ping()
+			res, err := client.Ping()
 			if err != nil {
 				fmt.Println("error: failed to ping controller:", err)
 				os.Exit(1)
 			}
-			fmt.Println("OK")
+			fmt.Printf("OK (LEAP version %0.3f)\n", res.LEAPVersion)
 		default:
 			usage()
 		}

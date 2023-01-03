@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mitchellh/mapstructure"
 )
 
 const controlPort = 8081
@@ -402,11 +403,29 @@ func (c *Client) Get(path string) (map[string]any, error) {
 	}
 }
 
+type PingResponseBody struct {
+	PingResponse PingResponse
+}
+
+type PingResponse struct {
+	LEAPVersion float32
+}
+
 // Ping sends a `ping` request to the controller. If no error is returned, the
 // controller responded with a 200 OK status.
-func (c *Client) Ping() error {
-	_, err := c.Get("/server/1/status/ping")
-	return err
+func (c *Client) Ping() (PingResponse, error) {
+	body, err := c.Get("/server/1/status/ping")
+	if err != nil {
+		return PingResponse{}, err
+	}
+
+	var res PingResponseBody
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return PingResponse{}, err
+	}
+
+	return res.PingResponse, nil
 }
 
 // Devices gets the list of devices this controller knows about.
