@@ -638,6 +638,10 @@ type MultipleZoneDefinition struct {
 	Zones []ZoneDefinition
 }
 
+type OneZoneDefinition struct {
+	Zone ZoneDefinition
+}
+
 // Zones gets the list of zones defined on this controller.
 func (c *Client) Zones() ([]ZoneDefinition, error) {
 	body, err := c.Get("/zone")
@@ -652,4 +656,20 @@ func (c *Client) Zones() ([]ZoneDefinition, error) {
 	}
 
 	return res.Zones, nil
+}
+
+// Zone gets information about the specified zone.
+func (c *Client) Zone(id string) (ZoneDefinition, error) {
+	body, err := c.Get(fmt.Sprintf("/zone/%s", id))
+	if err != nil {
+		return ZoneDefinition{}, err
+	}
+
+	var res OneZoneDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return ZoneDefinition{}, err
+	}
+
+	return res.Zone, nil
 }

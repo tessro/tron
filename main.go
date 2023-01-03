@@ -228,6 +228,7 @@ func doZoneCommand(client Client, args []string) {
 
 	usage := func() {
 		fmt.Println("usage: tron zone list")
+		fmt.Println("usage: tron zone info <id>")
 		os.Exit(1)
 	}
 
@@ -237,6 +238,17 @@ func doZoneCommand(client Client, args []string) {
 
 	command := args[0]
 	switch command {
+	case "info":
+		if len(args) < 2 {
+			usage()
+		}
+		id := args[1]
+		zone, err := client.Zone(id)
+		if err != nil {
+			fmt.Println("error: failed to retrieve zone info:", err)
+			os.Exit(1)
+		}
+		printZone(zone)
 	case "list":
 		list, err := client.Zones()
 		if err != nil {
