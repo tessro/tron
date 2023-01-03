@@ -25,6 +25,7 @@ func usage() {
 	fmt.Println("   ping         Ping paired controller")
 	fmt.Println()
 	fmt.Println("   get          Query controller endpoints")
+	fmt.Println("   post         Send data to controller endpoints")
 	fmt.Println()
 	fmt.Println("   device       Control Lutron devices")
 	fmt.Println("   server       Control Lutron controllers")
@@ -81,6 +82,8 @@ func main() {
 			doServiceCommand(client, flag.Args()[1:])
 		case "get":
 			doGetCommand(client, flag.Args()[1:])
+		case "post":
+			doPostCommand(client, flag.Args()[1:])
 		case "ping":
 			res, err := client.Ping()
 			if err != nil {
@@ -219,6 +222,39 @@ func doGetCommand(client Client, args []string) {
 
 	path := args[0]
 	res, err := client.Get(path)
+	if err != nil {
+		fmt.Println("error: failed to get path:", err)
+		os.Exit(1)
+	}
+
+	out, err := json.MarshalIndent(res, "", "  ")
+	if err != nil {
+		fmt.Println("error: failed to format response as JSON:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(string(out))
+}
+
+func doPostCommand(client Client, args []string) {
+	usage := func() {
+		fmt.Println("usage: tron post <path> <json>")
+		os.Exit(1)
+	}
+
+	if len(args) < 2 {
+		usage()
+	}
+
+	path := args[0]
+	raw := args[1]
+	var o map[string]any
+	err := json.Unmarshal([]byte(raw), &o)
+	if err != nil {
+		fmt.Println("error: failed to parse input as JSON:", err)
+		os.Exit(1)
+	}
+	res, err := client.Post(path, o)
 	if err != nil {
 		fmt.Println("error: failed to get path:", err)
 		os.Exit(1)

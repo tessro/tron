@@ -403,6 +403,62 @@ func (c *Client) Get(path string) (map[string]any, error) {
 	}
 }
 
+// Post sends a `CreateRequest` communique to the controller.
+func (c *Client) Post(path string, payload map[string]any) (map[string]any, error) {
+	fail := func(err error) (map[string]any, error) { return map[string]any{}, err }
+
+	err := c.dial()
+	if err != nil {
+		return fail(err)
+	}
+	defer c.Close()
+
+	tag := c.generateClientTag()
+
+	req := Request{
+		CommuniqueType: "CreateRequest",
+		Header: RequestHeader{
+			ClientTag: tag,
+			URL:       path,
+		},
+		Body: payload,
+	}
+
+	msg, err := json.Marshal(req)
+	if err != nil {
+		return fail(err)
+	}
+
+	err = c.send(msg)
+	if err != nil {
+		return fail(err)
+	}
+
+	for {
+		line, err := c.readLine()
+		if err != nil {
+			return fail(err)
+		}
+
+		var res Response
+		err = json.Unmarshal([]byte(line), &res)
+		if err != nil {
+			return fail(err)
+		}
+
+		if res.CommuniqueType == "ExceptionResponse" && res.Header.ClientTag == tag {
+			return fail(fmt.Errorf("received %s: %s", res.Header.StatusCode, res.Body["Message"]))
+		}
+		if res.CommuniqueType == "CreateResponse" && res.Header.ClientTag == tag {
+			if res.Header.StatusCode == "200 OK" {
+				return res.Body, nil
+			} else {
+				return fail(fmt.Errorf("received %s status", res.Header.StatusCode))
+			}
+		}
+	}
+}
+
 type PingResponseBody struct {
 	PingResponse PingResponse
 }
