@@ -126,7 +126,7 @@ func (c *Client) generateClientTag() string {
 
 func (c *Client) send(message []byte) error {
 	if c.Verbose {
-		os.Stderr.WriteString(fmt.Sprintln("<===", string(message)))
+		os.Stderr.WriteString(fmt.Sprintln("===>", string(message)))
 	}
 
 	_, err := c.conn.Write(message)
