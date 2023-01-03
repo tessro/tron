@@ -50,7 +50,7 @@ type RequestHeader struct {
 type Response struct {
 	CommuniqueType string
 	Header         ResponseHeader
-	Body           interface{}
+	Body           map[string]any
 }
 
 type ResponseHeader struct {
@@ -345,6 +345,61 @@ func (c *Client) Pair() error {
 	}
 
 	return nil
+}
+
+// Get sends a `ReadRequest` communique to the controller.
+func (c *Client) Get(path string) (map[string]any, error) {
+	fail := func(err error) (map[string]any, error) { return map[string]any{}, err }
+
+	err := c.dial()
+	if err != nil {
+		return fail(err)
+	}
+	defer c.Close()
+
+	tag := c.generateClientTag()
+
+	req := Request{
+		CommuniqueType: "ReadRequest",
+		Header: RequestHeader{
+			ClientTag: tag,
+			URL:       path,
+		},
+	}
+
+	msg, err := json.Marshal(req)
+	if err != nil {
+		return fail(err)
+	}
+
+	err = c.send(msg)
+	if err != nil {
+		return fail(err)
+	}
+
+	for {
+		line, err := c.readLine()
+		if err != nil {
+			return fail(err)
+		}
+
+		var res Response
+		err = json.Unmarshal([]byte(line), &res)
+		if err != nil {
+			return fail(err)
+		}
+
+		if res.CommuniqueType == "ExceptionResponse" && res.Header.ClientTag == tag {
+			return fail(fmt.Errorf("received %s: %s", res.Header.StatusCode, res.Body["Message"]))
+		}
+		if res.CommuniqueType == "ReadResponse" && res.Header.ClientTag == tag {
+			if res.Header.StatusCode == "200 OK" {
+				return res.Body, nil
+			} else {
+				return fail(fmt.Errorf("received %s status", res.Header.StatusCode))
+			}
+		}
+	}
 }
 
 // Ping sends a `ping` request to the controller. If no error is returned, the

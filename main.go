@@ -23,6 +23,8 @@ func usage() {
 	fmt.Println("   pair         Pair with a Lutron Caséta controller")
 	fmt.Println("   ping         Ping paired controller")
 	fmt.Println()
+	fmt.Println("   get          Query controller endpoints")
+	fmt.Println()
 	fmt.Println("   device       Control Lutron devices")
 	fmt.Println()
 	os.Exit(1)
@@ -70,6 +72,8 @@ func main() {
 			}
 		case "device":
 			doDeviceCommand(client, flag.Args()[1:])
+		case "get":
+			doGetCommand(client, flag.Args()[1:])
 		case "ping":
 			err := client.Ping()
 			if err != nil {
@@ -109,4 +113,23 @@ func doDeviceCommand(client Client, args []string) {
 	default:
 		usage()
 	}
+}
+
+func doGetCommand(client Client, args []string) {
+	usage := func() {
+		fmt.Println("usage: tron get <path>")
+		os.Exit(1)
+	}
+
+	if len(args) < 1 {
+		usage()
+	}
+
+	path := args[0]
+	res, err := client.Get(path)
+	if err != nil {
+		fmt.Println("error: failed to get path:", err)
+		os.Exit(1)
+	}
+	fmt.Printf("result: %+v\n", res)
 }
