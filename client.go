@@ -405,104 +405,18 @@ func (c *Client) Get(path string) (map[string]any, error) {
 // Ping sends a `ping` request to the controller. If no error is returned, the
 // controller responded with a 200 OK status.
 func (c *Client) Ping() error {
-	err := c.dial()
-	if err != nil {
-		return err
-	}
-	defer c.Close()
-
-	tag := c.generateClientTag()
-
-	req := Request{
-		CommuniqueType: "ReadRequest",
-		Header: RequestHeader{
-			ClientTag: tag,
-			URL:       "/server/1/status/ping",
-		},
-	}
-
-	msg, err := json.Marshal(req)
-	if err != nil {
-		return err
-	}
-
-	err = c.send(msg)
-	if err != nil {
-		return err
-	}
-
-	for {
-		line, err := c.readLine()
-		if err != nil {
-			return err
-		}
-
-		var res Response
-		err = json.Unmarshal([]byte(line), &res)
-		if err != nil {
-			return err
-		}
-
-		if res.CommuniqueType == "ReadResponse" && res.Header.ClientTag == tag {
-			if res.Header.StatusCode == "200 OK" {
-				return nil
-			} else {
-				return fmt.Errorf("received %s status", res.Header.StatusCode)
-			}
-		}
-	}
+	_, err := c.Get("/server/1/status/ping")
+	return err
 }
 
 // Devices gets the list of devices this controller knows about.
 func (c *Client) Devices() (string, error) {
-	err := c.dial()
+	devices, err := c.Get("/device")
 	if err != nil {
-		return "", err
-	}
-	defer c.Close()
-
-	tag := c.generateClientTag()
-
-	req := Request{
-		CommuniqueType: "ReadRequest",
-		Header: RequestHeader{
-			ClientTag: tag,
-			URL:       "/device",
-		},
+		return "error", err
 	}
 
-	msg, err := json.Marshal(req)
-	if c.Verbose {
-		fmt.Println("ReadRequest", "/device")
-	}
-	if err != nil {
-		return "", err
-	}
+	fmt.Println("devices:", devices)
 
-	err = c.send(msg)
-	if err != nil {
-		return "", err
-	}
-
-	for {
-		line, err := c.readLine()
-		if err != nil {
-			return "", err
-		}
-
-		var res Response
-		err = json.Unmarshal([]byte(line), &res)
-		if err != nil {
-			return "", err
-		}
-
-		if res.CommuniqueType == "ReadResponse" && res.Header.ClientTag == tag {
-			if res.Header.StatusCode == "200 OK" {
-				fmt.Printf("res: %+v\n", res)
-				return "success", nil
-			} else {
-				return "", fmt.Errorf("received %s status", res.Header.StatusCode)
-			}
-		}
-	}
+	return "success", nil
 }
