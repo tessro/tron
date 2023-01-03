@@ -14,10 +14,21 @@ Tron expects a `.tronrc` file in your home directory, with the following
 settings:
 
 ```ini
-host=<ip address>
+host=<hostname or ip address>
 ```
 
 You can find your Lutron controller's IP address via your router console.
+Alternatively, you may be able to use mDNS service discovery. For example, on
+macOS you can do the following:
+
+```bash
+$ dns-sd -Z _lutron | grep -o 'Lutron-.*\.local'
+# => Lutron-00000000.local
+#
+# Use this as your `host` setting.
+#
+# (You'll need to Ctrl-C to wrap up, since `dns-sd` listens indefinitely.)
+```
 
 Before you can run commands, you need to pair `tron` with your controller. To do
 this, run `tron pair` and follow the instructions in your terminal.
