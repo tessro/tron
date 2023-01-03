@@ -283,6 +283,8 @@ func (c *Client) Pair() error {
 		Bytes: csrCert,
 	})
 
+	fmt.Println("Push the button on the back of your controller...")
+
 	line, err := c.readLine()
 	if err != nil {
 		return err
