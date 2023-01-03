@@ -223,7 +223,7 @@ func doGetCommand(client Client, args []string) {
 	path := args[0]
 	res, err := client.Get(path)
 	if err != nil {
-		fmt.Println("error: failed to get path:", err)
+		fmt.Println("error: request failed:", err)
 		os.Exit(1)
 	}
 
@@ -256,7 +256,7 @@ func doPostCommand(client Client, args []string) {
 	}
 	res, err := client.Post(path, o)
 	if err != nil {
-		fmt.Println("error: failed to get path:", err)
+		fmt.Println("error: request failed:", err)
 		os.Exit(1)
 	}
 
