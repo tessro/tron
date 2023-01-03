@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"strconv"
 
 	"gopkg.in/ini.v1"
 )
@@ -229,6 +230,7 @@ func doZoneCommand(client Client, args []string) {
 	usage := func() {
 		fmt.Println("usage: tron zone list")
 		fmt.Println("usage: tron zone info <id>")
+		fmt.Println("usage: tron zone dim <id> <level>")
 		os.Exit(1)
 	}
 
@@ -238,6 +240,22 @@ func doZoneCommand(client Client, args []string) {
 
 	command := args[0]
 	switch command {
+	case "dim":
+		if len(args) < 3 {
+			usage()
+		}
+		id := args[1]
+		level, err := strconv.Atoi(args[2])
+		if err != nil {
+			fmt.Println("error: invalid level:", err)
+			os.Exit(1)
+		}
+
+		_, err = client.ZoneDim(id, level)
+		if err != nil {
+			fmt.Println("error: failed to dim zone:", err)
+			os.Exit(1)
+		}
 	case "info":
 		if len(args) < 2 {
 			usage()

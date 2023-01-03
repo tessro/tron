@@ -42,6 +42,7 @@ tron service list          # List supported 3rd party services
 # Zones
 tron zone list             # List defined zones
 tron zone info <id>        # Print all zone information
+tron zone dim <id> <level> # Dim the zone to the provided level
 
 # Raw querying
 tron get <path>            # Send a `ReadRequest`

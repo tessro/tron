@@ -404,7 +404,7 @@ func (c *Client) Get(path string) (map[string]any, error) {
 }
 
 // Post sends a `CreateRequest` communique to the controller.
-func (c *Client) Post(path string, payload map[string]any) (map[string]any, error) {
+func (c *Client) Post(path string, payload any) (map[string]any, error) {
 	fail := func(err error) (map[string]any, error) { return map[string]any{}, err }
 
 	err := c.dial()
@@ -667,6 +667,48 @@ func (c *Client) Zone(id string) (ZoneDefinition, error) {
 
 	var res OneZoneDefinition
 	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return ZoneDefinition{}, err
+	}
+
+	return res.Zone, nil
+}
+
+type DimCommand struct {
+	CommandType string
+	Parameter   []DimCommandParameter
+}
+
+type DimCommandParameter struct {
+	Type  string
+	Value int
+}
+
+type DimCommandBody struct {
+	Command DimCommand
+}
+
+// ZoneDim dims the zone to the provided level.
+func (c *Client) ZoneDim(id string, level int) (ZoneDefinition, error) {
+	body := DimCommandBody{
+		Command: DimCommand{
+			CommandType: "GoToLevel",
+			Parameter: []DimCommandParameter{
+				{
+					Type:  "Level",
+					Value: level,
+				},
+			},
+		},
+	}
+
+	raw, err := c.Post(fmt.Sprintf("/zone/%s/commandprocessor", id), body)
+	if err != nil {
+		return ZoneDefinition{}, err
+	}
+
+	var res OneZoneDefinition
+	err = mapstructure.Decode(raw, &res)
 	if err != nil {
 		return ZoneDefinition{}, err
 	}
