@@ -39,6 +39,10 @@ tron server info [id]      # Print all controller information
 # Services
 tron service list          # List supported 3rd party services
 
+# Zones
+tron zone list             # List defined zones
+tron zone info <id>        # Print all zone information
+
 # Raw querying
 tron get <path>            # Send a `ReadRequest`
 tron post <path> <json>    # Send a `CreateRequest`
