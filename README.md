@@ -31,4 +31,14 @@ tron ping   # Verify that `tron` can communicate with your controller
 
 # Devices
 tron device list           # List installed devices
+
+# Servers
+tron server list           # List available controllers
+
+# Services
+tron service list          # List supported 3rd party services
+
+# Raw querying
+tron get <path>            # Send a `ReadRequest`
+tron post <path> <json>    # Send a `CreateRequest`
 ```
