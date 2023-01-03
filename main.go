@@ -30,6 +30,7 @@ func usage() {
 	fmt.Println("   device       Control Lutron devices")
 	fmt.Println("   server       Control Lutron controllers")
 	fmt.Println("   service      Control 3rd-party services")
+	fmt.Println("   zone         Control zones")
 	fmt.Println()
 	os.Exit(1)
 }
@@ -80,6 +81,8 @@ func main() {
 			doServerCommand(client, flag.Args()[1:])
 		case "service":
 			doServiceCommand(client, flag.Args()[1:])
+		case "zone":
+			doZoneCommand(client, flag.Args()[1:])
 		case "get":
 			doGetCommand(client, flag.Args()[1:])
 		case "post":
@@ -204,6 +207,45 @@ func doServiceCommand(client Client, args []string) {
 		}
 		for _, service := range list {
 			fmt.Printf("%s (%s)\n", service.Type, service.Href)
+		}
+	default:
+		usage()
+	}
+}
+
+func doZoneCommand(client Client, args []string) {
+	printZone := func(zone ZoneDefinition) {
+		fmt.Println("Name:", zone.Name)
+		fmt.Println("Path:", zone.Href)
+		fmt.Println("Type:", zone.ControlType)
+		if zone.Category.Type != "" {
+			fmt.Println("Category:")
+			fmt.Println("  Type:    ", zone.Category.Type)
+			fmt.Println("  Is Light:", zone.Category.IsLight)
+		}
+		fmt.Println("Device Path:", zone.Device.Href)
+	}
+
+	usage := func() {
+		fmt.Println("usage: tron zone list")
+		os.Exit(1)
+	}
+
+	if len(args) < 1 {
+		usage()
+	}
+
+	command := args[0]
+	switch command {
+	case "list":
+		list, err := client.Zones()
+		if err != nil {
+			fmt.Println("error: failed retrieve zone list:", err)
+			os.Exit(1)
+		}
+		for _, zone := range list {
+			printZone(zone)
+			fmt.Println()
 		}
 	default:
 		usage()

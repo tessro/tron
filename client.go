@@ -619,3 +619,37 @@ func (c *Client) Services() ([]ServiceDefinition, error) {
 
 	return res.Services, nil
 }
+
+type ZoneDefinition struct {
+	Name        string
+	Href        string `json:"href"`
+	ControlType string
+
+	Category struct {
+		IsLight bool
+		Type    string
+	}
+	Device struct {
+		Href string `json:"href"`
+	}
+}
+
+type MultipleZoneDefinition struct {
+	Zones []ZoneDefinition
+}
+
+// Zones gets the list of zones defined on this controller.
+func (c *Client) Zones() ([]ZoneDefinition, error) {
+	body, err := c.Get("/zone")
+	if err != nil {
+		return []ZoneDefinition{}, err
+	}
+
+	var res MultipleZoneDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return []ZoneDefinition{}, err
+	}
+
+	return res.Zones, nil
+}
