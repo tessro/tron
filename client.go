@@ -450,7 +450,7 @@ func (c *Client) Post(path string, payload map[string]any) (map[string]any, erro
 			return fail(fmt.Errorf("received %s: %s", res.Header.StatusCode, res.Body["Message"]))
 		}
 		if res.CommuniqueType == "CreateResponse" && res.Header.ClientTag == tag {
-			if res.Header.StatusCode == "200 OK" {
+			if res.Header.StatusCode == "201 Created" {
 				return res.Body, nil
 			} else {
 				return fail(fmt.Errorf("received %s status", res.Header.StatusCode))
