@@ -27,6 +27,7 @@ func usage() {
 	fmt.Println("   get          Query controller endpoints")
 	fmt.Println()
 	fmt.Println("   device       Control Lutron devices")
+	fmt.Println("   server       Control Lutron controllers")
 	fmt.Println("   service      Control 3rd-party services")
 	fmt.Println()
 	os.Exit(1)
@@ -74,6 +75,8 @@ func main() {
 			}
 		case "device":
 			doDeviceCommand(client, flag.Args()[1:])
+		case "server":
+			doServerCommand(client, flag.Args()[1:])
 		case "service":
 			doServiceCommand(client, flag.Args()[1:])
 		case "get":
@@ -113,6 +116,65 @@ func doDeviceCommand(client Client, args []string) {
 		}
 		for _, name := range list {
 			fmt.Println(name)
+		}
+	default:
+		usage()
+	}
+}
+
+func doServerCommand(client Client, args []string) {
+	printServer := func(server ServerDefinition) {
+		fmt.Println("Path:   ", server.Href)
+		fmt.Println("Type:   ", server.Type)
+		fmt.Printf("Enabled: %v\n", server.EnableState == "Enabled")
+		fmt.Println()
+		fmt.Println("Protocol Version:", server.ProtocolVersion)
+		fmt.Println()
+		fmt.Println("LEAP:")
+		fmt.Println("  Pairing List:", server.LEAPProperties.PairingList.Href)
+		fmt.Println()
+		fmt.Println("Endpoints:")
+		for _, ep := range server.Endpoints {
+			fmt.Printf("- %d (%s)\n", ep.Port, ep.Protocol)
+		}
+		fmt.Println()
+		fmt.Println("Network Interfaces:")
+		for _, iface := range server.NetworkInterfaces {
+			fmt.Println("-", iface.Href)
+		}
+	}
+
+	usage := func() {
+		fmt.Println("usage: tron server list")
+		fmt.Println("usage: tron server info [id]")
+		os.Exit(1)
+	}
+
+	if len(args) < 1 {
+		usage()
+	}
+
+	command := args[0]
+	switch command {
+	case "info":
+		id := "1"
+		if len(args) >= 2 {
+			id = args[1]
+		}
+		server, err := client.Server(id)
+		if err != nil {
+			fmt.Println("error: failed to retrieve server info:", err)
+			os.Exit(1)
+		}
+		printServer(server)
+	case "list":
+		list, err := client.Servers()
+		if err != nil {
+			fmt.Println("error: failed to retrieve server list:", err)
+			os.Exit(1)
+		}
+		for _, server := range list {
+			printServer(server)
 		}
 	default:
 		usage()

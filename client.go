@@ -440,6 +440,70 @@ func (c *Client) Devices() (string, error) {
 	return "success", nil
 }
 
+type MultipleServerDefinition struct {
+	Servers []ServerDefinition
+}
+
+type ServerDefinition struct {
+	Type string
+	Href string `json:"href"`
+
+	ProtocolVersion string
+	EnableState     string
+
+	Endpoints []struct {
+		Port     int
+		Protocol string
+
+		AssociatedNetworkInterfaces any
+	}
+	LEAPProperties struct {
+		PairingList struct {
+			Href string `json:"href"`
+		}
+	}
+	NetworkInterfaces []struct {
+		Href string `json:"href"`
+	}
+}
+
+// Servers gets the list of servers this controller knows about. Typically,
+// this will just return a single entry for the controller we are connected to.
+func (c *Client) Servers() ([]ServerDefinition, error) {
+	body, err := c.Get("/server")
+	if err != nil {
+		return []ServerDefinition{}, err
+	}
+
+	var res MultipleServerDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return []ServerDefinition{}, err
+	}
+
+	return res.Servers, nil
+}
+
+type OneServerDefinition struct {
+	Server ServerDefinition
+}
+
+// Server gets information about the specified server.
+func (c *Client) Server(id string) (ServerDefinition, error) {
+	body, err := c.Get(fmt.Sprintf("/server/%s", id))
+	if err != nil {
+		return ServerDefinition{}, err
+	}
+
+	var res OneServerDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return ServerDefinition{}, err
+	}
+
+	return res.Server, nil
+}
+
 type MultipleServiceDefinition struct {
 	Services []ServiceDefinition
 }
@@ -483,7 +547,8 @@ type ServiceDefinition struct {
 	SonosProperties          ServiceProperties
 }
 
-// Devices gets the list of devices this controller knows about.
+// Services gets the list of 3rd-party services this controller can interface
+// with.
 func (c *Client) Services() ([]ServiceDefinition, error) {
 	body, err := c.Get("/service")
 	if err != nil {
