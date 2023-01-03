@@ -439,3 +439,62 @@ func (c *Client) Devices() (string, error) {
 
 	return "success", nil
 }
+
+type MultipleServiceDefinition struct {
+	Services []ServiceDefinition
+}
+
+type ServiceProperties struct {
+	// Common properties
+	DataSummary struct {
+		Href string `json:"href"`
+	}
+	Errors []struct {
+		ErrorCode int
+		Details   string
+	}
+
+	// AutoProgrammer-specific
+	EnabledState string
+
+	// HomeKit-specific
+	BonjourServiceName string
+	MaxAssociations    int
+
+	// Sonos-specific
+	FavoriteHousehold SonosHousehold
+	Households        []SonosHousehold
+}
+
+type SonosHousehold struct {
+	Href string `json:"href"`
+}
+
+type ServiceDefinition struct {
+	Href string `json:"href"`
+	Type string
+
+	AlexaProperties          ServiceProperties
+	AutoProgrammerProperties ServiceProperties
+	GoogleHomeProperties     ServiceProperties
+	HomeKitProperties        ServiceProperties
+	IFTTTProperties          ServiceProperties
+	NestProperties           ServiceProperties
+	SonosProperties          ServiceProperties
+}
+
+// Devices gets the list of devices this controller knows about.
+func (c *Client) Services() ([]ServiceDefinition, error) {
+	body, err := c.Get("/service")
+	if err != nil {
+		return []ServiceDefinition{}, err
+	}
+
+	var res MultipleServiceDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return []ServiceDefinition{}, err
+	}
+
+	return res.Services, nil
+}

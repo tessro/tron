@@ -27,6 +27,7 @@ func usage() {
 	fmt.Println("   get          Query controller endpoints")
 	fmt.Println()
 	fmt.Println("   device       Control Lutron devices")
+	fmt.Println("   service      Control 3rd-party services")
 	fmt.Println()
 	os.Exit(1)
 }
@@ -73,6 +74,8 @@ func main() {
 			}
 		case "device":
 			doDeviceCommand(client, flag.Args()[1:])
+		case "service":
+			doServiceCommand(client, flag.Args()[1:])
 		case "get":
 			doGetCommand(client, flag.Args()[1:])
 		case "ping":
@@ -110,6 +113,32 @@ func doDeviceCommand(client Client, args []string) {
 		}
 		for _, name := range list {
 			fmt.Println(name)
+		}
+	default:
+		usage()
+	}
+}
+
+func doServiceCommand(client Client, args []string) {
+	usage := func() {
+		fmt.Println("usage: tron service list")
+		os.Exit(1)
+	}
+
+	if len(args) < 1 {
+		usage()
+	}
+
+	command := args[0]
+	switch command {
+	case "list":
+		list, err := client.Services()
+		if err != nil {
+			fmt.Println("error: failed retrieve service list:", err)
+			os.Exit(1)
+		}
+		for _, service := range list {
+			fmt.Printf("%s (%s)\n", service.Type, service.Href)
 		}
 	default:
 		usage()
