@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"gopkg.in/ini.v1"
 )
@@ -104,6 +105,39 @@ func main() {
 }
 
 func doDeviceCommand(client Client, args []string) {
+	printDevice := func(device DeviceDefinition) {
+		fmt.Println("Name:         ", strings.Join(device.FullyQualifiedName, " "))
+		fmt.Println("Path:         ", device.Href)
+		fmt.Println("Type:         ", device.DeviceType)
+		fmt.Println("Model Number: ", device.ModelNumber)
+		fmt.Println("Serial Number:", device.SerialNumber)
+		fmt.Println()
+		fmt.Println("Addressed State:", device.AddressedState)
+		fmt.Println("Associated Area:", device.AssociatedArea.Href)
+		fmt.Println("Parent Path:    ", device.Parent.Href)
+		fmt.Println()
+		if len(device.ButtonGroups) > 0 {
+			fmt.Println("Button Groups:")
+			for _, bg := range device.ButtonGroups {
+				fmt.Println("-", bg.Href)
+			}
+		}
+		fmt.Println()
+		if len(device.DeviceRules) > 0 {
+			fmt.Println("Device Rules:")
+			for _, dr := range device.DeviceRules {
+				fmt.Println("-", dr.Href)
+			}
+		}
+		fmt.Println()
+		if len(device.LinkNodes) > 0 {
+			fmt.Println("Link Nodes:")
+			for _, ln := range device.LinkNodes {
+				fmt.Println("-", ln.Href)
+			}
+		}
+	}
+
 	usage := func() {
 		fmt.Println("usage: tron device list")
 		os.Exit(1)
@@ -115,14 +149,33 @@ func doDeviceCommand(client Client, args []string) {
 
 	command := args[0]
 	switch command {
+	case "info":
+		if len(args) < 2 {
+			usage()
+		}
+		id := args[1]
+		device, err := client.Device(id)
+		if err != nil {
+			fmt.Println("error: failed to retrieve device info:", err)
+			os.Exit(1)
+		}
+		printDevice(device)
 	case "list":
 		list, err := client.Devices()
 		if err != nil {
 			fmt.Println("error: failed retrieve device list:", err)
 			os.Exit(1)
 		}
-		for _, name := range list {
-			fmt.Println(name)
+		first := true
+		for _, device := range list {
+			if first {
+				first = false
+			} else {
+				fmt.Println("==========")
+				fmt.Println()
+			}
+			printDevice(device)
+			fmt.Println()
 		}
 	default:
 		usage()

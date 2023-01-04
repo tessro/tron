@@ -486,16 +486,73 @@ func (c *Client) Ping() (PingResponse, error) {
 	return res.PingResponse, nil
 }
 
+type DeviceDefinition struct {
+	Href string `json:"href"`
+
+	DeviceType   string
+	ModelNumber  string
+	SerialNumber int
+
+	Name               string
+	FullyQualifiedName []string
+
+	AddressedState string
+
+	AssociatedArea struct {
+		Href string `json:"href"`
+	}
+	ButtonGroups []struct {
+		Href string `json:"href"`
+	}
+	DeviceRules []struct {
+		Href string `json:"href"`
+	}
+	LinkNodes []struct {
+		Href string `json:"href"`
+	}
+	Parent struct {
+		Href string `json:"href"`
+	}
+}
+
+type OneDeviceDefinition struct {
+	Device DeviceDefinition
+}
+
+type MultipleDeviceDefinition struct {
+	Devices []DeviceDefinition
+}
+
 // Devices gets the list of devices this controller knows about.
-func (c *Client) Devices() (string, error) {
-	devices, err := c.Get("/device")
+func (c *Client) Device(id string) (DeviceDefinition, error) {
+	body, err := c.Get(fmt.Sprintf("/device/%s", id))
 	if err != nil {
-		return "error", err
+		return DeviceDefinition{}, err
 	}
 
-	fmt.Println("devices:", devices)
+	var res OneDeviceDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return DeviceDefinition{}, err
+	}
 
-	return "success", nil
+	return res.Device, nil
+}
+
+// Devices gets the list of devices this controller knows about.
+func (c *Client) Devices() ([]DeviceDefinition, error) {
+	body, err := c.Get("/device")
+	if err != nil {
+		return []DeviceDefinition{}, err
+	}
+
+	var res MultipleDeviceDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return []DeviceDefinition{}, err
+	}
+
+	return res.Devices, nil
 }
 
 type MultipleServerDefinition struct {
