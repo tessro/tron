@@ -82,6 +82,14 @@ tron device info 21
 tron zone dim 12 50
 ```
 
+This may seem like a lot of work for a single light! Remember, `tron` is a
+low-level tool. The idea is that once you have a command that does something
+useful, you'll use that command in a script and never have to worry about
+sorting out the IDs and arguments again.
+
+That said, if you have ideas for improving ergonomics, please open an issue.
+I'd love to discuss!
+
 ## Usage
 
 ```bash
