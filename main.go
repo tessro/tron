@@ -388,11 +388,11 @@ func doZoneCommand(client Client, args []string) {
 		options := DimOptions{
 			Level: level,
 		}
-		if len(args) >= 3 {
-			options.Duration = args[2]
-		}
 		if len(args) >= 4 {
-			options.Delay = args[3]
+			options.Duration = args[3]
+		}
+		if len(args) >= 5 {
+			options.Delay = args[4]
 		}
 		_, err = client.ZoneDim(id, options)
 		if err != nil {
