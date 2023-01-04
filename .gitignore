@@ -19,3 +19,6 @@ go.work
 
 # Vim sessions
 Session.vim
+
+# GoReleaser output
+dist/
