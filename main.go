@@ -132,7 +132,7 @@ func doAreaCommand(client Client, args []string) {
 
 	usage := func() {
 		fmt.Println("usage: tron area list")
-		fmt.Println("usage: tron area info <id>")
+		fmt.Println("       tron area info <id>")
 		os.Exit(1)
 	}
 
