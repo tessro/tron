@@ -284,6 +284,7 @@ func doZoneCommand(client Client, args []string) {
 	usage := func() {
 		fmt.Println("usage: tron zone list")
 		fmt.Println("usage: tron zone info <id>")
+		fmt.Println("usage: tron zone status <id>")
 		fmt.Println("usage: tron zone on <id>")
 		fmt.Println("usage: tron zone off <id>")
 		fmt.Println("usage: tron zone dim <id> <level>")
@@ -353,6 +354,21 @@ func doZoneCommand(client Client, args []string) {
 			fmt.Println("error: failed to dim zone:", err)
 			os.Exit(1)
 		}
+	case "status":
+		if len(args) < 2 {
+			usage()
+		}
+		id := args[1]
+		zoneStatus, err := client.ZoneStatus(id)
+		if err != nil {
+			fmt.Println("error: failed to retrieve zone status:", err)
+			os.Exit(1)
+		}
+		fmt.Println("Level:   ", zoneStatus.Level)
+		fmt.Println("Accuracy:", zoneStatus.StatusAccuracy)
+		fmt.Println()
+		fmt.Println("Status Path:", zoneStatus.Href)
+		fmt.Println("Zone Path:  ", zoneStatus.Zone.Href)
 	default:
 		usage()
 	}

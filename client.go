@@ -758,3 +758,31 @@ func (c *Client) ZoneDim(id string, level int) (ZoneDefinition, error) {
 
 	return res.Zone, nil
 }
+
+type ZoneStatus struct {
+	Href string `json:"href"`
+
+	Zone           HrefObject
+	Level          int
+	StatusAccuracy string
+}
+
+type OneZoneStatus struct {
+	ZoneStatus ZoneStatus
+}
+
+// ZoneStatus gets the current status of the zone.
+func (c *Client) ZoneStatus(id string) (ZoneStatus, error) {
+	raw, err := c.Get(fmt.Sprintf("/zone/%s/status", id))
+	if err != nil {
+		return ZoneStatus{}, err
+	}
+
+	var res OneZoneStatus
+	err = mapstructure.Decode(raw, &res)
+	if err != nil {
+		return ZoneStatus{}, err
+	}
+
+	return res.ZoneStatus, nil
+}
