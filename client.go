@@ -61,6 +61,10 @@ type ResponseHeader struct {
 	URL             string `json:"Url"`
 }
 
+type HrefObject struct {
+	Href string `json:"href"`
+}
+
 func (c Client) loadClientCertificate() (tls.Certificate, error) {
 	clientCert, err := os.ReadFile(c.ClientCertPath)
 	if err != nil {
@@ -498,21 +502,11 @@ type DeviceDefinition struct {
 
 	AddressedState string
 
-	AssociatedArea struct {
-		Href string `json:"href"`
-	}
-	ButtonGroups []struct {
-		Href string `json:"href"`
-	}
-	DeviceRules []struct {
-		Href string `json:"href"`
-	}
-	LinkNodes []struct {
-		Href string `json:"href"`
-	}
-	Parent struct {
-		Href string `json:"href"`
-	}
+	AssociatedArea HrefObject
+	ButtonGroups   []HrefObject
+	DeviceRules    []HrefObject
+	LinkNodes      []HrefObject
+	Parent         HrefObject
 }
 
 type OneDeviceDefinition struct {
@@ -573,13 +567,9 @@ type ServerDefinition struct {
 		AssociatedNetworkInterfaces any
 	}
 	LEAPProperties struct {
-		PairingList struct {
-			Href string `json:"href"`
-		}
+		PairingList HrefObject
 	}
-	NetworkInterfaces []struct {
-		Href string `json:"href"`
-	}
+	NetworkInterfaces []HrefObject
 }
 
 // Servers gets the list of servers this controller knows about. Typically,
@@ -625,10 +615,8 @@ type MultipleServiceDefinition struct {
 
 type ServiceProperties struct {
 	// Common properties
-	DataSummary struct {
-		Href string `json:"href"`
-	}
-	Errors []struct {
+	DataSummary HrefObject
+	Errors      []struct {
 		ErrorCode int
 		Details   string
 	}
@@ -645,9 +633,7 @@ type ServiceProperties struct {
 	Households        []SonosHousehold
 }
 
-type SonosHousehold struct {
-	Href string `json:"href"`
-}
+type SonosHousehold HrefObject
 
 type ServiceDefinition struct {
 	Href string `json:"href"`
@@ -688,9 +674,7 @@ type ZoneDefinition struct {
 		IsLight bool
 		Type    string
 	}
-	Device struct {
-		Href string `json:"href"`
-	}
+	Device HrefObject
 }
 
 type MultipleZoneDefinition struct {
