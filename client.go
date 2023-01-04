@@ -717,29 +717,49 @@ func (c *Client) Zone(id string) (ZoneDefinition, error) {
 	return res.Zone, nil
 }
 
-type DimCommand struct {
-	CommandType string
-	Parameter   []DimCommandParameter
-}
-
-type DimCommandParameter struct {
+type CommandParameter struct {
 	Type  string
 	Value int
 }
 
-type DimCommandBody struct {
-	Command DimCommand
+type GoToLevelCommand struct {
+	CommandType string
+	Parameter   []CommandParameter
 }
 
-// ZoneDim dims the zone to the provided level.
-func (c *Client) ZoneDim(id string, level int) (ZoneDefinition, error) {
-	body := DimCommandBody{
-		Command: DimCommand{
+type GoToLevelCommandBody struct {
+	Command GoToLevelCommand
+}
+
+type DimmedLevelParameters struct {
+	DelayTime string `json:",omitempty"`
+	FadeTime  string `json:",omitempty"`
+	Level     int
+}
+
+type GoToDimmedLevelCommand struct {
+	CommandType           string
+	DimmedLevelParameters DimmedLevelParameters
+}
+
+type GoToDimmedLevelCommandBody struct {
+	Command GoToDimmedLevelCommand
+}
+
+type DimOptions struct {
+	Delay    string
+	Duration string
+	Level    int
+}
+
+func (c *Client) zoneGoToLevel(id string, options DimOptions) (ZoneDefinition, error) {
+	body := GoToLevelCommandBody{
+		Command: GoToLevelCommand{
 			CommandType: "GoToLevel",
-			Parameter: []DimCommandParameter{
+			Parameter: []CommandParameter{
 				{
 					Type:  "Level",
-					Value: level,
+					Value: options.Level,
 				},
 			},
 		},
@@ -757,6 +777,41 @@ func (c *Client) ZoneDim(id string, level int) (ZoneDefinition, error) {
 	}
 
 	return res.Zone, nil
+}
+
+func (c *Client) zoneGoToDimmedLevel(id string, options DimOptions) (ZoneDefinition, error) {
+	body := GoToDimmedLevelCommandBody{
+		Command: GoToDimmedLevelCommand{
+			CommandType: "GoToDimmedLevel",
+			DimmedLevelParameters: DimmedLevelParameters{
+				DelayTime: options.Delay,
+				FadeTime:  options.Duration,
+				Level:     options.Level,
+			},
+		},
+	}
+
+	raw, err := c.Post(fmt.Sprintf("/zone/%s/commandprocessor", id), body)
+	if err != nil {
+		return ZoneDefinition{}, err
+	}
+
+	var res OneZoneDefinition
+	err = mapstructure.Decode(raw, &res)
+	if err != nil {
+		return ZoneDefinition{}, err
+	}
+
+	return res.Zone, nil
+}
+
+// ZoneDim dims the zone to the provided level.
+func (c *Client) ZoneDim(id string, options DimOptions) (ZoneDefinition, error) {
+	if options.Delay == "" && options.Duration == "" {
+		return c.zoneGoToLevel(id, options)
+	} else {
+		return c.zoneGoToDimmedLevel(id, options)
+	}
 }
 
 type ZoneStatus struct {

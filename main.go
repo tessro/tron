@@ -285,9 +285,9 @@ func doZoneCommand(client Client, args []string) {
 		fmt.Println("usage: tron zone list")
 		fmt.Println("usage: tron zone info <id>")
 		fmt.Println("usage: tron zone status <id>")
-		fmt.Println("usage: tron zone on <id>")
-		fmt.Println("usage: tron zone off <id>")
-		fmt.Println("usage: tron zone dim <id> <level>")
+		fmt.Println("usage: tron zone on <id> [duration] [delay]")
+		fmt.Println("usage: tron zone off <id> [duration] [delay]")
+		fmt.Println("usage: tron zone dim <id> <level> [duration] [delay]")
 		os.Exit(1)
 	}
 
@@ -307,8 +307,16 @@ func doZoneCommand(client Client, args []string) {
 			fmt.Println("error: invalid level:", err)
 			os.Exit(1)
 		}
-
-		_, err = client.ZoneDim(id, level)
+		options := DimOptions{
+			Level: level,
+		}
+		if len(args) >= 3 {
+			options.Duration = args[2]
+		}
+		if len(args) >= 4 {
+			options.Delay = args[3]
+		}
+		_, err = client.ZoneDim(id, options)
 		if err != nil {
 			fmt.Println("error: failed to dim zone:", err)
 			os.Exit(1)
@@ -339,7 +347,16 @@ func doZoneCommand(client Client, args []string) {
 			usage()
 		}
 		id := args[1]
-		_, err := client.ZoneDim(id, 100)
+		options := DimOptions{
+			Level: 100,
+		}
+		if len(args) >= 3 {
+			options.Duration = args[2]
+		}
+		if len(args) >= 4 {
+			options.Delay = args[3]
+		}
+		_, err := client.ZoneDim(id, options)
 		if err != nil {
 			fmt.Println("error: failed to dim zone:", err)
 			os.Exit(1)
@@ -349,7 +366,16 @@ func doZoneCommand(client Client, args []string) {
 			usage()
 		}
 		id := args[1]
-		_, err := client.ZoneDim(id, 0)
+		options := DimOptions{
+			Level: 0,
+		}
+		if len(args) >= 3 {
+			options.Duration = args[2]
+		}
+		if len(args) >= 4 {
+			options.Delay = args[3]
+		}
+		_, err := client.ZoneDim(id, options)
 		if err != nil {
 			fmt.Println("error: failed to dim zone:", err)
 			os.Exit(1)
