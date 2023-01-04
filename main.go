@@ -140,6 +140,7 @@ func doDeviceCommand(client Client, args []string) {
 
 	usage := func() {
 		fmt.Println("usage: tron device list")
+		fmt.Println("       tron device info <id>")
 		os.Exit(1)
 	}
 
