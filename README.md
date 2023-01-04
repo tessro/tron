@@ -4,11 +4,26 @@ Tron is a tiny CLI tool for controlling Lutron Caséta systems.
 
 ## Installation
 
-Make sure `$GOPATH/bin` is on your `$PATH`, then run:
+### macOS
+
+`tron` is available via a Homebrew Tap:
+
+```bash
+brew install paulrosania/command-home/tron
+```
+
+You can also download a precompiled binary from the
+[releases](https://github.com/paulrosania/tron/releases) page.
+
+### Source
+
+Make sure Go is installed, and that `$GOPATH/bin` is on your `$PATH`. Then run:
 
 ```bash
 go install github.com/paulrosania/tron
 ```
+
+# Getting Started
 
 Tron expects a `.tronrc` file in your home directory, with the following
 settings:
