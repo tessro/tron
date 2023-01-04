@@ -33,6 +33,55 @@ $ dns-sd -Z _lutron | grep -o 'Lutron-.*\.local'
 Before you can run commands, you need to pair `tron` with your controller. To do
 this, run `tron pair` and follow the instructions in your terminal.
 
+## Terminology
+
+`tron` is designed to provide raw control. It is not an abstraction layer. It
+uses Lutron's terminology, which can be a bit confusing. Here's a quick guide:
+
+- **Area:** Areas represent groups of zones (e.g. rooms).
+- **Device:** Devices represent actual hardware (dimmers, remotes, etc.).
+- **Zone:** Zones are control interfaces. Each device belongs to a zone, and
+  you control a device by sending commands to its zone.
+
+For example, to dim lights in your living room:
+
+```bash
+# Find the living room area
+tron area list
+# => Name:     Living Room
+# => Category: LivingRoom
+# => Path:     /area/12
+# => Parent:   /area/1
+# =>
+# => Devices:
+# => - /device/21
+
+# Find device 21's zone
+tron device info 21
+# => Name:          Living Room Main Lights
+# => Path:          /device/21
+# => Type:          WallDimmer
+# => Model Number:  PD-6WCL-XX
+# => Serial Number: 00000000
+# =>
+# => Addressed State: Addressed
+# => Associated Area: /area/12
+# => Parent Path:     /project
+# =>
+# => Local Zones:
+# => - /zone/12
+# =>
+# =>
+# => Device Rules:
+# => - /devicerule/27
+# =>
+# => Link Nodes:
+# => - /device/21/linknode/21
+
+# Dim the lights to 50%
+tron zone dim 12 50
+```
+
 ## Usage
 
 ```bash
