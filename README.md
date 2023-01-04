@@ -40,22 +40,28 @@ this, run `tron pair` and follow the instructions in your terminal.
 tron pair   # Pair with a controller
 tron ping   # Verify that `tron` can communicate with your controller
 
+# Areas
+tron area list             # List defined areas
+tron area info <id>        # Print information about a specific area
+
 # Devices
 tron device list           # List installed devices
+tron device info <id>      # Print information about a specific device
 
 # Servers
 tron server list           # List available controllers
-tron server info [id]      # Print all controller information
+tron server info [id]      # Print information about a specific controller
 
 # Services
 tron service list          # List supported 3rd party services
 
 # Zones
 tron zone list             # List defined zones
-tron zone info <id>        # Print all zone information
-tron zone on <id>          # Turn the zone on (dim to 100)
-tron zone off <id>         # Turn the zone off (dim to 0)
-tron zone dim <id> <level> # Dim the zone to the provided level (0-100)
+tron zone info <id>        # Print information about a specific zone
+tron zone status <id>      # Print zone status (e.g. dimming level)
+tron zone on <id> [duration] [delay]          # Turn the zone on (dim to 100)
+tron zone off <id> [duration] [delay]         # Turn the zone off (dim to 0)
+tron zone dim <id> <level> [duration] [delay] # Dim the zone to the provided level (0-100)
 
 # Raw querying
 tron get <path>            # Send a `ReadRequest`
