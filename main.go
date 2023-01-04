@@ -29,6 +29,7 @@ func usage() {
 	fmt.Println("   get          Query controller endpoints")
 	fmt.Println("   post         Send data to controller endpoints")
 	fmt.Println()
+	fmt.Println("   area         Control areas")
 	fmt.Println("   device       Control Lutron devices")
 	fmt.Println("   server       Control Lutron controllers")
 	fmt.Println("   service      Control 3rd-party services")
@@ -77,6 +78,8 @@ func main() {
 				fmt.Println("error: failed to pair controller:", err)
 				os.Exit(1)
 			}
+		case "area":
+			doAreaCommand(client, flag.Args()[1:])
 		case "device":
 			doDeviceCommand(client, flag.Args()[1:])
 		case "server":
@@ -100,6 +103,74 @@ func main() {
 			usage()
 		}
 	} else {
+		usage()
+	}
+}
+
+func doAreaCommand(client Client, args []string) {
+	printArea := func(area AreaDefinition) {
+		fmt.Println("Name:    ", area.Name)
+		fmt.Println("Category:", area.Category.Type)
+		fmt.Println("Path:    ", area.Href)
+		fmt.Println("Parent:  ", area.Parent.Href)
+		fmt.Println()
+		fmt.Println("Devices:")
+		for _, d := range area.AssociatedDevices {
+			fmt.Println("-", d.Href)
+		}
+		fmt.Println()
+		fmt.Println("Daylighting Gain Settings:", area.DaylightingGainSettings.Href)
+		fmt.Println("Load Shedding:            ", area.LoadShedding.Href)
+		fmt.Println("Occupancy Settings:       ", area.OccupancySettings.Href)
+		fmt.Println("Occupancy Sensor Settings:", area.OccupancySensorSettings.Href)
+		fmt.Println()
+		fmt.Println("Occupancy Groups:")
+		for _, og := range area.AssociatedOccupancyGroups {
+			fmt.Println("-", og.Href)
+		}
+	}
+
+	usage := func() {
+		fmt.Println("usage: tron area list")
+		fmt.Println("usage: tron area info <id>")
+		os.Exit(1)
+	}
+
+	if len(args) < 1 {
+		usage()
+	}
+
+	command := args[0]
+	switch command {
+	case "info":
+		if len(args) < 2 {
+			usage()
+		}
+		id := args[1]
+		area, err := client.Area(id)
+		if err != nil {
+			fmt.Println("error: failed to retrieve area info:", err)
+			os.Exit(1)
+		}
+		printArea(area)
+	case "list":
+		list, err := client.Areas()
+		if err != nil {
+			fmt.Println("error: failed retrieve area list:", err)
+			os.Exit(1)
+		}
+		first := true
+		for _, area := range list {
+			if first {
+				first = false
+			} else {
+				fmt.Println("==========")
+				fmt.Println()
+			}
+			printArea(area)
+			fmt.Println()
+		}
+	default:
 		usage()
 	}
 }

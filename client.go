@@ -665,6 +665,63 @@ func (c *Client) Services() ([]ServiceDefinition, error) {
 	return res.Services, nil
 }
 
+type AreaDefinition struct {
+	Href string `json:"href"`
+	Name string
+
+	Category struct {
+		Type string
+	}
+
+	AssociatedDevices         []HrefObject
+	AssociatedOccupancyGroups []HrefObject
+	DaylightingGainSettings   HrefObject
+	LoadShedding              HrefObject
+	OccupancySettings         HrefObject
+	OccupancySensorSettings   HrefObject
+	Parent                    HrefObject
+}
+
+type MultipleAreaDefinition struct {
+	Areas []AreaDefinition
+}
+
+type OneAreaDefinition struct {
+	Area AreaDefinition
+}
+
+// Areas gets the list of areas defined on this controller.
+func (c *Client) Areas() ([]AreaDefinition, error) {
+	body, err := c.Get("/area")
+	if err != nil {
+		return []AreaDefinition{}, err
+	}
+
+	var res MultipleAreaDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return []AreaDefinition{}, err
+	}
+
+	return res.Areas, nil
+}
+
+// Area gets information about the specified area.
+func (c *Client) Area(id string) (AreaDefinition, error) {
+	body, err := c.Get(fmt.Sprintf("/area/%s", id))
+	if err != nil {
+		return AreaDefinition{}, err
+	}
+
+	var res OneAreaDefinition
+	err = mapstructure.Decode(body, &res)
+	if err != nil {
+		return AreaDefinition{}, err
+	}
+
+	return res.Area, nil
+}
+
 type ZoneDefinition struct {
 	Name        string
 	Href        string `json:"href"`
