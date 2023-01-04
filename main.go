@@ -187,6 +187,13 @@ func doDeviceCommand(client Client, args []string) {
 		fmt.Println("Associated Area:", device.AssociatedArea.Href)
 		fmt.Println("Parent Path:    ", device.Parent.Href)
 		fmt.Println()
+		if len(device.LocalZones) > 0 {
+			fmt.Println("Local Zones:")
+			for _, lz := range device.LocalZones {
+				fmt.Println("-", lz.Href)
+			}
+		}
+		fmt.Println()
 		if len(device.ButtonGroups) > 0 {
 			fmt.Println("Button Groups:")
 			for _, bg := range device.ButtonGroups {

@@ -506,6 +506,7 @@ type DeviceDefinition struct {
 	ButtonGroups   []HrefObject
 	DeviceRules    []HrefObject
 	LinkNodes      []HrefObject
+	LocalZones     []HrefObject
 	Parent         HrefObject
 }
 
