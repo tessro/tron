@@ -9,7 +9,30 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  build-darwin:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: stable
+      - name: Build
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest
+          args: release --skip-publish --config .goreleaser.darwin.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: tron-darwin
+          path: dist/tron*
+  build-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -20,10 +43,53 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: stable
-      - name: Run GoReleaser
+      - name: Install cross-compiler for linux/arm64
+        run: sudo apt-get -y install gcc-aarch64-linux-gnu
+      - name: Build
         uses: goreleaser/goreleaser-action@v4
         with:
           version: latest
-          args: release --rm-dist
+          args: release --skip-publish --config .goreleaser.linux.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload
+        uses: actions/upload-artifact@v3
+        with:
+          name: tron-linux
+          path: dist/tron*
+  release:
+    needs: [build-darwin, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: stable
+      - name: Download darwin binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: tron-darwin
+          path: ./tron-build/darwin
+      - name: Download linux binaries
+        uses: actions/download-artifact@v3
+        with:
+          name: tron-linux
+          path: ./tron-build/linux
+      - name: Merge checksums
+        run: |
+          cd tron-build
+          cat ./darwin/tron*checksums.txt >> checksums.txt
+          cat ./linux/tron*checksums.txt >> checksums.txt
+          rm ./darwin/tron*checksums.txt
+          rm ./linux/tron*checksums.txt
+      - name: Release
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          version: latest
+          args: release --config .goreleaser.release.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,13 @@
+builds:
+  - skip: true
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^ci:"
+      - "^docs:"
+      - "^test:"
+release:
+  extra_files:
+    - glob: ./tron-build/**/*
+    - glob: ./tron-build/checksums.txt

@@ -22,3 +22,6 @@ Session.vim
 
 # GoReleaser output
 dist/
+
+# GitHub artifacts
+tron-build/
