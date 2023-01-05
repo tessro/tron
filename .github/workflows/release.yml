@@ -31,7 +31,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: tron-darwin
-          path: dist/tron*
+          path: dist/tron_*.*
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: tron-linux
-          path: dist/tron*
+          path: dist/tron_*.*
   release:
     needs: [build-darwin, build-linux]
     runs-on: ubuntu-latest
