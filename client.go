@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -255,6 +256,24 @@ func (c *Client) Pair() error {
 	type PairRequest struct {
 		Body   PairRequestBody
 		Header RequestHeader
+	}
+
+	clientCertDir := path.Dir(c.ClientCertPath)
+	err = os.MkdirAll(clientCertDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	clientKeyDir := path.Dir(c.ClientKeyPath)
+	err = os.MkdirAll(clientKeyDir, 0755)
+	if err != nil {
+		return err
+	}
+
+	caCertDir := path.Dir(c.ClientCertPath)
+	err = os.MkdirAll(caCertDir, 0755)
+	if err != nil {
+		return err
 	}
 
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
