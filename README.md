@@ -48,6 +48,12 @@ $ dns-sd -Z _lutron | grep -o 'Lutron-.*\.local'
 Before you can run commands, you need to pair `tron` with your controller. To do
 this, run `tron pair` and follow the instructions in your terminal.
 
+**Note:** If you get the error `error: failed to ping controller: dial tcp: lookup Lutron-00000000.local on 192.168.1.1:53: no such host`,
+you need to use an IP address instead of the `Lutron-00000000.local` hostname.
+This is a limitation of some versions of `tron`. You can find the IP address by
+running `dns-sd -q Lutron-00000000.local` (substituting the actual hostname you
+got earlier). The IP address should appear in the `Rdata` column.
+
 ## Terminology
 
 `tron` is designed to provide raw control. It is not an abstraction layer. It
