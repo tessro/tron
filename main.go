@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -16,12 +17,25 @@ import (
 const defaultConfigFile = ".tronrc"
 const defaultCertDir = ".config/tron/certs"
 
+//go:generate bash get_versions.sh
+
+//go:embed tmp/version.txt
+var Version string
+
+//go:embed tmp/go_version.txt
+var GoVersion string
+
+//go:embed tmp/commit_hash.txt
+var CommitHash string
+
 var verbose = flag.Bool("v", false, "Verbose")
 
 func usage() {
 	fmt.Println("usage: tron [-v] <command>")
 	fmt.Println()
 	fmt.Println("Commands:")
+	fmt.Println()
+	fmt.Println("   version      Print tron version")
 	fmt.Println()
 	fmt.Println("   pair         Pair with a Lutron Caséta controller")
 	fmt.Println("   ping         Ping paired controller")
@@ -99,6 +113,8 @@ func main() {
 				os.Exit(1)
 			}
 			fmt.Printf("OK (LEAP version %0.3f)\n", res.LEAPVersion)
+		case "version":
+			fmt.Printf("tron %s (%s) go/%s\n", Version, CommitHash, GoVersion)
 		default:
 			usage()
 		}

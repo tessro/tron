@@ -20,6 +20,8 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: stable
+      - name: Generate code
+        run: go generate
       - name: Build
         uses: goreleaser/goreleaser-action@v4
         with:
@@ -45,6 +47,8 @@ jobs:
           go-version: stable
       - name: Install cross-compiler for linux/arm64
         run: sudo apt-get -y install gcc-aarch64-linux-gnu
+      - name: Generate code
+        run: go generate
       - name: Build
         uses: goreleaser/goreleaser-action@v4
         with:

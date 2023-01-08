@@ -23,5 +23,8 @@ Session.vim
 # GoReleaser output
 dist/
 
+# Temporary files
+tmp/
+
 # GitHub artifacts
 tron-build/
