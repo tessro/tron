@@ -74,12 +74,12 @@ jobs:
         with:
           go-version: stable
       - name: Download darwin binaries
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: tron-darwin
           path: ./tron-build/darwin
       - name: Download linux binaries
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: tron-linux
           path: ./tron-build/linux
